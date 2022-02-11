@@ -1,6 +1,7 @@
 package com.example.blindproductdetection.api;
 
 import com.example.blindproductdetection.model.Cost;
+import com.example.blindproductdetection.model.Product;
 
 import java.util.List;
 
@@ -16,5 +17,5 @@ public interface RetrofitArrayApi {
 
 
     @GET("/products/")
-    Call<List<Cost>> getProduct(@Query("name")String name);
+    Call<List<Product>> getProduct(@Query("name")String name);
 }

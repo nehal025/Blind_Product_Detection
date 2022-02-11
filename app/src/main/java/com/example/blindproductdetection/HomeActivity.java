@@ -15,6 +15,8 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -28,6 +30,9 @@ public class HomeActivity extends AppCompatActivity implements RecognitionListen
     private Intent recognizerIntent;
     private String LOG_TAG = "VoiceRecognitionActivity";
     TextToSpeech t;
+    Boolean flag=true;
+
+    Button cost,product;
 
 
     @Override
@@ -35,16 +40,36 @@ public class HomeActivity extends AppCompatActivity implements RecognitionListen
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        cost=findViewById(R.id.cost);
+        product=findViewById(R.id.Product);
+
+        product.setOnClickListener(v -> {
+            Intent myIntent = new Intent(HomeActivity.this, Camera.class);
+            HomeActivity.this.startActivity(myIntent);
+        });
+
+        cost.setOnClickListener(v -> {
+            Intent myIntent = new Intent(HomeActivity.this, IdentifyCost.class);
+            HomeActivity.this.startActivity(myIntent);
+        });
+
         resetSpeechRecognizer();
         setRecogniserIntent();
 
 
+        welcomeSpeech();
+
+
+    }
+
+    public void welcomeSpeech() {
+
         t = new TextToSpeech(getApplicationContext(), i -> {
 
-            String text = "Welcome to blind product detection say cost for cost identification  and say identify for product identification ";
+            String text = "Welcome to blind product detection say cost for cost identification  , say product for product identification ,and say exit for closing app ";
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                t.speak(text,TextToSpeech.QUEUE_FLUSH,null,null);
+                t.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
             } else {
                 t.speak(text, TextToSpeech.QUEUE_FLUSH, null);
             }
@@ -52,30 +77,38 @@ public class HomeActivity extends AppCompatActivity implements RecognitionListen
         });
 
 
-        final Handler h =new Handler();
+
+        final Handler h = new Handler();
         Runnable r = new Runnable() {
 
             public void run() {
 
                 if (!t.isSpeaking()) {
                     if (allPermissionsGranted()) {
+
                         speech.startListening(recognizerIntent);
 //                        Toast.makeText(getBaseContext(), "TTS Completed", Toast.LENGTH_SHORT).show();
 
                     } else {
-                        ActivityCompat.requestPermissions(HomeActivity.this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
 
-                        t.speak("you are starting app first time so, please take anyone's help to allow ,all  Permissions ",TextToSpeech.QUEUE_FLUSH,null,null);
+
+
+                        if(flag){
+                            ActivityCompat.requestPermissions(HomeActivity.this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
+
+                        }
+                        flag=false;
+                        t.speak("you are starting app first time so, please take anyone's help to allow ,all  Permissions ", TextToSpeech.QUEUE_FLUSH, null, null);
 
                     }
                     return;
                 }
 
-                h.postDelayed(this, 500);
+                h.postDelayed(this, 100);
             }
         };
 
-        h.postDelayed(r, 500);
+        h.postDelayed(r, 100);
 
 
 
@@ -91,7 +124,6 @@ public class HomeActivity extends AppCompatActivity implements RecognitionListen
         }
         return true;
     }
-
 
 
     private void resetSpeechRecognizer() {
@@ -135,21 +167,26 @@ public class HomeActivity extends AppCompatActivity implements RecognitionListen
     public void onResults(Bundle results) {
         ArrayList<String> matches = results
                 .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-        String text = "";
-
-        for (String result : matches)
-
-            text += result + "\n";
-        if (text.contains("cost")) {
+//        String text = "";
+//
+//        for (String result : matches)
+//
+//            text += result + "\n";
+        if (matches.contains("cost")) {
 
             Intent myIntent = new Intent(HomeActivity.this, IdentifyCost.class);
             HomeActivity.this.startActivity(myIntent);
 
         }
-        if (text.contains("identify")) {
+        if (matches.contains("product")) {
 
             Intent myIntent = new Intent(HomeActivity.this, Camera.class);
             HomeActivity.this.startActivity(myIntent);
+
+        }
+        if (matches.contains("exit")) {
+
+            finish();
 
         }
         speech.startListening(recognizerIntent);
@@ -178,7 +215,6 @@ public class HomeActivity extends AppCompatActivity implements RecognitionListen
     }
 
 
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 
@@ -198,26 +234,26 @@ public class HomeActivity extends AppCompatActivity implements RecognitionListen
 
     @Override
     public void onResume() {
-        Log.i(LOG_TAG, "resume");
         super.onResume();
         resetSpeechRecognizer();
-        speech.startListening(recognizerIntent);
+        welcomeSpeech();
     }
 
     @Override
     protected void onPause() {
-        Log.i(LOG_TAG, "pause");
         super.onPause();
         speech.stopListening();
+       t.stop();
     }
 
     @Override
     protected void onStop() {
-        Log.i(LOG_TAG, "stop");
         super.onStop();
         if (speech != null) {
             speech.destroy();
         }
+        t.stop();
+
     }
 
 

@@ -37,7 +37,7 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProductClassifier extends AppCompatActivity  implements RecognitionListener {
+public class ProductClassifier extends AppCompatActivity implements RecognitionListener {
 
     ImageView imageView;
     ImageView classify;
@@ -51,6 +51,7 @@ public class ProductClassifier extends AppCompatActivity  implements Recognition
     private SpeechRecognizer speech = null;
     private Intent recognizerIntent;
     private String LOG_TAG = "VoiceRecognitionActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,8 +71,8 @@ public class ProductClassifier extends AppCompatActivity  implements Recognition
         });
 
         retake.setOnClickListener(v -> {
-            Intent myIntent = new Intent(ProductClassifier.this, Camera.class);
-            ProductClassifier.this.startActivity(myIntent);
+            Intent intent = new Intent(this, Camera.class);
+            startActivity(intent);
             finish();
         });
 
@@ -83,19 +84,25 @@ public class ProductClassifier extends AppCompatActivity  implements Recognition
 
         resetSpeechRecognizer();
         setRecogniserIntent();
+        welcomeSpeech();
+
+
+    }
+
+    public  void welcomeSpeech(){
         t = new TextToSpeech(getApplicationContext(), i -> {
 
-            String text = "Image successfully captured,Say classify for product identification  and ,Say retake for retaking image ";
+            String text = "Image successfully captured,Say classify for product identification  ,Say retake for retaking image  ,and say Exit for going back to home screen";
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                t.speak(text,TextToSpeech.QUEUE_FLUSH,null,null);
+                t.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
             } else {
                 t.speak(text, TextToSpeech.QUEUE_FLUSH, null);
             }
 
         });
 
-        final Handler h =new Handler();
+        final Handler h = new Handler();
         Runnable r = new Runnable() {
 
             public void run() {
@@ -114,8 +121,8 @@ public class ProductClassifier extends AppCompatActivity  implements Recognition
         };
 
         h.postDelayed(r, 500);
-
     }
+
     private void resetSpeechRecognizer() {
 
         if (speech != null)
@@ -138,6 +145,7 @@ public class ProductClassifier extends AppCompatActivity  implements Recognition
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
     }
+
     @SuppressLint("DefaultLocale")
     public void classifyImage(Bitmap image) {
         try {
@@ -208,14 +216,14 @@ public class ProductClassifier extends AppCompatActivity  implements Recognition
         manager = getAssets();
         InputStream is = manager.open("labels.txt");
         InputStreamReader isr = new InputStreamReader(is);
-        BufferedReader br  = new BufferedReader(isr);
+        BufferedReader br = new BufferedReader(isr);
         try {
             while ((line = br.readLine()) != null) {
-                labels.add(line) ;
+                labels.add(line);
             }
-        }catch (IOException e1) {
+        } catch (IOException e1) {
             Toast.makeText(getBaseContext(), "Problem!", Toast.LENGTH_SHORT).show();
-        }finally{
+        } finally {
             br.close();
             isr.close();
             is.close();
@@ -257,22 +265,26 @@ public class ProductClassifier extends AppCompatActivity  implements Recognition
     public void onResults(Bundle results) {
         ArrayList<String> matches = results
                 .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-        String text = "";
+//        String text = "";
+//
+//        for (String result : matches)
+//
+//            text += result + "\n";
 
-        for (String result : matches)
-
-            text += result + "\n";
-        if (text.contains("classify")) {
-
+        if (matches.contains("classify")) {
             classify.performClick();
-
         }
-        if (text.contains("retake")) {
+        if (matches.contains("retake")) {
             retake.performClick();
+        }
 
-
+        if (matches.contains("exit")) {
+            Intent intent = new Intent(this, HomeActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            startActivity(intent);
         }
         speech.startListening(recognizerIntent);
+
     }
 
     @Override
@@ -282,6 +294,30 @@ public class ProductClassifier extends AppCompatActivity  implements Recognition
 
     @Override
     public void onEvent(int eventType, Bundle params) {
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        resetSpeechRecognizer();
+        welcomeSpeech();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        speech.stopListening();
+        t.stop();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (speech != null) {
+            speech.destroy();
+        }
+        t.stop();
 
     }
 }

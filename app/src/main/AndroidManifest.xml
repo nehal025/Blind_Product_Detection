@@ -8,7 +8,9 @@
             <action android:name="android.speech.RecognitionService" />
         </intent>
     </queries>
-
+    <queries>
+        <package android:name="com.google.android.googlequicksearchbox"/>
+    </queries>
     <!-- Camera Permission -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />

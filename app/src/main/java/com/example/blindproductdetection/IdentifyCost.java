@@ -33,62 +33,47 @@ public class IdentifyCost extends AppCompatActivity implements
         resetSpeechRecognizer();
         setRecogniserIntent();
 //        speech.startListening(recognizerIntent);
-        t = new TextToSpeech(getApplicationContext(), i -> {
-
-            String text = "Say any product name for cost identification ";
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                t.speak(text,TextToSpeech.QUEUE_FLUSH,null,null);
-            } else {
-                t.speak(text, TextToSpeech.QUEUE_FLUSH, null);
-            }
-
-        });
+        welcomeSpeech();
 
 
-        final Handler h =new Handler();
-        Runnable r = new Runnable() {
+    }
 
-            public void run() {
+   public void welcomeSpeech(){
+       t = new TextToSpeech(getApplicationContext(), i -> {
 
-                if (!t.isSpeaking()) {
+           String text = "Say any product name for cost identification ,or say exit for going back to home screen";
 
-                        speech.startListening(recognizerIntent);
+           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+               t.speak(text,TextToSpeech.QUEUE_FLUSH,null,null);
+           } else {
+               t.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+           }
+
+       });
+
+
+       final Handler h =new Handler();
+       Runnable r = new Runnable() {
+
+           public void run() {
+
+               if (!t.isSpeaking()) {
+
+                   speech.startListening(recognizerIntent);
 //                        Toast.makeText(getBaseContext(), "TTS Completed", Toast.LENGTH_SHORT).show();
 
 
-                    return;
-                }
+                   return;
+               }
 
-                h.postDelayed(this, 500);
-            }
-        };
+               h.postDelayed(this, 500);
+           }
+       };
 
-        h.postDelayed(r, 500);
+       h.postDelayed(r, 500);
+   }
 
-    }
 
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        resetSpeechRecognizer();
-        speech.startListening(recognizerIntent);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        speech.stopListening();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (speech != null) {
-            speech.destroy();
-        }
-    }
 
 
     private void resetSpeechRecognizer() {
@@ -132,16 +117,23 @@ public class IdentifyCost extends AppCompatActivity implements
     public void onResults(Bundle results) {
         ArrayList<String> matches = results
                 .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-        String text = "";
+//        String text = "";
+//
+//        for (String result : matches) {
+//
+//            text += result + "\n";
+//        }
 
-        for (String result : matches) {
+        if(matches.contains("exit")){
+            finish();
+        }else {
 
-            text += result + "\n";
+            Intent myIntent = new Intent(IdentifyCost.this, DisplayCost.class);
+            myIntent.putExtra("name", matches.get(0));
+            IdentifyCost.this.startActivity(myIntent);
+            finish();
+
         }
-
-        Intent myIntent = new Intent(IdentifyCost.this, DisplayCost.class);
-        myIntent.putExtra("name", matches.get(0));
-        IdentifyCost.this.startActivity(myIntent);
 
 
         speech.startListening(recognizerIntent);
@@ -169,4 +161,27 @@ public class IdentifyCost extends AppCompatActivity implements
     public void onRmsChanged(float rmsdB) {
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        resetSpeechRecognizer();
+        welcomeSpeech();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        speech.stopListening();
+        t.stop();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (speech != null) {
+            speech.destroy();
+        }
+        t.stop();
+
+    }
 }

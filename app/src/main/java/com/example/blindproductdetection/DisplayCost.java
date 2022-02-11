@@ -20,6 +20,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.example.blindproductdetection.adapter.CostAdapter;
 import com.example.blindproductdetection.api.RetrofitArrayApi;
 import com.example.blindproductdetection.model.Cost;
@@ -47,19 +48,21 @@ public class DisplayCost extends AppCompatActivity {
     ImageView errorImage;
     TextView errorTitle, errorMessage;
     Button btnRetry;
+    LottieAnimationView lottie;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_display_cost);
         Intent intent = getIntent();
-        TextView tv=findViewById(R.id.productName);
-        progressBar=findViewById(R.id.progressbar);
+        TextView tv = findViewById(R.id.productName);
+//        progressBar=findViewById(R.id.progressbar);
         recyclerView = findViewById(R.id.recyclerView_restaurant);
         layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setNestedScrollingEnabled(false);
+        lottie = findViewById(R.id.lottie);
 
         errorLayout = findViewById(R.id.errorLayout);
         errorImage = findViewById(R.id.errorImage);
@@ -68,15 +71,14 @@ public class DisplayCost extends AppCompatActivity {
         btnRetry = findViewById(R.id.btnRetry);
 
 
-
         String name = intent.getStringExtra("name");
         tv.setText(name);
         t = new TextToSpeech(getApplicationContext(), i -> {
 
-            String text = "searching "+name+", in amazon ";
+            String text = "searching " + name + ", in amazon ";
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                t.speak(text,TextToSpeech.QUEUE_FLUSH,null,null);
+                t.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
             } else {
                 t.speak(text, TextToSpeech.QUEUE_FLUSH, null);
             }
@@ -95,7 +97,7 @@ public class DisplayCost extends AppCompatActivity {
                 .writeTimeout(60, TimeUnit.SECONDS)
                 .build();
 
-        String baseURL = "http://192.168.1.201:3000//";
+        String baseURL = "https://blind-product-detection.herokuapp.com/";
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(baseURL)
                 .client(okHttpClient)
@@ -112,15 +114,16 @@ public class DisplayCost extends AppCompatActivity {
             public void onResponse(@NonNull Call<List<Cost>> call, @NonNull Response<List<Cost>> response) {
 
                 assert response.body() != null;
-                if(!response.body().isEmpty()){
-                    progressBar.setVisibility(View.GONE);
-                     t = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+                if (!response.body().isEmpty()) {
+                    lottie.cancelAnimation();
+                    lottie.setVisibility(View.GONE);
+                    t = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
                         @Override
                         public void onInit(int i) {
 
-                            String text ="The Minimum cost product is "+ response.body().get(0).getTitle()+"for rupees "+response.body().get(0).getCash()+" And  The Maximum cost product is"+ response.body().get(1).getTitle()+"for rupees "+response.body().get(1).getCash();
+                            String text = "The Minimum cost product is " + response.body().get(0).getTitle() + "for rupees " + response.body().get(0).getCash() + " And  The Maximum cost product is" + response.body().get(1).getTitle() + "for rupees " + response.body().get(1).getCash();
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                t.speak(text,TextToSpeech.QUEUE_FLUSH,null,null);
+                                t.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
                             } else {
                                 t.speak(text, TextToSpeech.QUEUE_FLUSH, null);
                             }
@@ -128,15 +131,15 @@ public class DisplayCost extends AppCompatActivity {
                     });
 
 
-                    if (!productCost.isEmpty()){
+                    if (!productCost.isEmpty()) {
                         productCost.clear();
                     }
 
-                    for (int i=0; i<response.body().size();i++){
+                    for (int i = 0; i < response.body().size(); i++) {
 
-                        productCost.add( new Cost(response.body().get(i).getTitle(),
+                        productCost.add(new Cost(response.body().get(i).getTitle(),
                                 response.body().get(i).getImg(),
-                                "Rs"+response.body().get(i).getCash(),response.body().get(i).getBookNow()
+                                "Rs" + response.body().get(i).getCash(), response.body().get(i).getBookNow()
 
                         ));
                     }
@@ -148,9 +151,7 @@ public class DisplayCost extends AppCompatActivity {
                     initListener();
 
 
-
-
-                }else{
+                } else {
 
                     String errorCode;
                     switch (response.code()) {
@@ -168,17 +169,15 @@ public class DisplayCost extends AppCompatActivity {
                     showErrorMessage(
                             R.drawable.no_result,
                             "No Result",
-                            "Please Try Again!\n"+
+                            "Please Try Again!\n" +
                                     errorCode);
 
                 }
             }
 
 
-
-
             @Override
-            public void onFailure(Call <List<Cost>> call, Throwable t) {
+            public void onFailure(Call<List<Cost>> call, Throwable t) {
 
                 showErrorMessage(R.drawable.no_result, "Oops..",
 
@@ -189,7 +188,8 @@ public class DisplayCost extends AppCompatActivity {
 
 
     }
-    private void showErrorMessage(int imageView, String title, String message){
+
+    private void showErrorMessage(int imageView, String title, String message) {
 
         if (errorLayout.getVisibility() == View.GONE) {
             errorLayout.setVisibility(View.VISIBLE);
@@ -207,7 +207,7 @@ public class DisplayCost extends AppCompatActivity {
         });
     }
 
-    private void initListener(){
+    private void initListener() {
 
 
         costAdapter.setOnItemClickListener(new CostAdapter.OnItemClickListener() {
@@ -225,6 +225,26 @@ public class DisplayCost extends AppCompatActivity {
 
             }
         });
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        t.stop();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        t.stop();
 
     }
 
