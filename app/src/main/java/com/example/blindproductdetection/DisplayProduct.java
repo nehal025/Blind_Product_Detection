@@ -1,26 +1,26 @@
 package com.example.blindproductdetection;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
-
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.bumptech.glide.Glide;
@@ -32,13 +32,13 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 import com.example.blindproductdetection.api.RetrofitArrayApi;
-import com.example.blindproductdetection.model.Cost;
 import com.example.blindproductdetection.model.Product;
 import com.example.blindproductdetection.utils.Utils;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -49,47 +49,51 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class DisplayProduct extends AppCompatActivity implements RecognitionListener {
-    TextView mLocation,mConfidence;
-    String location,confidence;
-    TextToSpeech t;
+
+    TextView displayProduct,displayDes,displayPrice;
+    String product, confidence;
+    TextToSpeech textToSpeech;
     LottieAnimationView lottie;
-    CoordinatorLayout displayProduct;
-    ImageView img;
+    ImageView displayImg;
+    CoordinatorLayout hideLayout;
 
     private SpeechRecognizer speech = null;
     private Intent recognizerIntent;
-    private String LOG_TAG = "VoiceRecognitionActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_display_product);
-        lottie=findViewById(R.id.lottie);
-        displayProduct=findViewById(R.id.displayProduct);
-        displayProduct.setVisibility(View.INVISIBLE);
-        img=findViewById(R.id.product_img);
+        lottie = findViewById(R.id.lottie);
+        displayProduct = findViewById(R.id.product);
+        displayImg = findViewById(R.id.product_img);
+        displayDes = findViewById(R.id.product_des);
+        displayPrice = findViewById(R.id.product_cost);
+        hideLayout = findViewById(R.id.hide_layout);
+        hideLayout.setVisibility(View.INVISIBLE);
 
-        mLocation=findViewById(R.id.location);
-        mConfidence=findViewById(R.id.des);
 
-        location= getIntent().getExtras().getString("location");
-        confidence= getIntent().getExtras().getString("confidence");
 
-        mLocation.setText(location);
-        mConfidence.setText(confidence);
+        product = getIntent().getExtras().getString("product");
+        confidence = getIntent().getExtras().getString("confidence");
+
+        displayProduct.setText(product);
+//        mConfidence.setText(confidence);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
 
-        CollapsingToolbarLayout collapsingToolbarLayout=findViewById(R.id.collapsing_toolbar);
-        collapsingToolbarLayout.setTitle(location);
+        CollapsingToolbarLayout collapsingToolbarLayout = findViewById(R.id.collapsing_toolbar);
+        collapsingToolbarLayout.setTitle(product);
+        collapsingToolbarLayout.setExpandedTitleColor(Color.TRANSPARENT);
+
+
         resetSpeechRecognizer();
         setRecogniserIntent();
         welcomeSpeech();
-
-
-
+        getRetrofit(product);
 
 
     }
@@ -114,77 +118,61 @@ public class DisplayProduct extends AppCompatActivity implements RecognitionList
 
 
         call.enqueue(new Callback<List<Product>>() {
+            @SuppressLint("CheckResult")
             @Override
             public void onResponse(@NonNull Call<List<Product>> call, @NonNull Response<List<Product>> response) {
 
-                if(!response.body().isEmpty()){
+                if (!response.body().isEmpty()) {
                     lottie.cancelAnimation();
                     lottie.setVisibility(View.GONE);
-                    displayProduct.setVisibility(View.VISIBLE);
+                    hideLayout.setVisibility(View.VISIBLE);
 
 
-//                    RequestOptions requestOptions = new RequestOptions();
-//                    requestOptions.placeholder(Utils.getRandomDrawbleColor());
-//                    requestOptions.error(Utils.getRandomDrawbleColor());
-//                    requestOptions.diskCacheStrategy(DiskCacheStrategy.ALL);
-//                    requestOptions.centerCrop();
-//
-//                    Glide.with(getApplicationContext())
-//                            .load(response.body().get(0).getImg())
-//                            .apply(requestOptions)
-//                            .listener(new RequestListener<Drawable>() {
-//                                @Override
-//                                public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-////                                    holder.progressBar.setVisibility(View.GONE);
-//                                    return false;
-//                                }
-//
-//                                @Override
-//                                public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-////                                    holder.progressBar.setVisibility(View.GONE);
-//                                    return false;
-//                                }
-//                            })
-//                            .transition(DrawableTransitionOptions.withCrossFade())
-//                            .into(img);
 
-                    t = new TextToSpeech(getApplicationContext(), i -> {
+                    RequestOptions requestOptions = new RequestOptions();
+                    requestOptions.placeholder(Utils.getRandomDrawbleColor());
+                    requestOptions.error(Utils.getRandomDrawbleColor());
+                    requestOptions.diskCacheStrategy(DiskCacheStrategy.ALL);
+                    requestOptions.centerCrop();
 
-                        String text =response.body().get(0).getTitle()+"detected And,"+response.body().get(0).getInfo() +",that's about it "+",And for navigation ,Say exit for going back to home screen and,say capture for identifying another product";
+                    Glide.with(getApplicationContext())
+                            .load(response.body().get(0).getImg())
+                            .apply(requestOptions)
+                            .listener(new RequestListener<Drawable>() {
+                                @Override
+                                public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+//                                    holder.progressBar.setVisibility(View.GONE);
+                                    return false;
+                                }
 
+                                @Override
+                                public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+//                                    holder.progressBar.setVisibility(View.GONE);
+                                    return false;
+                                }
+                            })
+                            .transition(DrawableTransitionOptions.withCrossFade())
+                            .into(displayImg);
+                    displayDes.setText(response.body().get(0).getInfo());
+                    displayPrice.setText(response.body().get(0).getPrice());
 
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            t.speak(text,TextToSpeech.QUEUE_FLUSH,null,null);
-                        } else {
-                            t.speak(text, TextToSpeech.QUEUE_FLUSH, null);
-                        }
+                    textToSpeech = new TextToSpeech(getApplicationContext(), i -> {
+
+                        String text = response.body().get(0).getTitle() + ", detected And," + response.body().get(0).getInfo() + " ,It is for" + response.body().get(0).getPrice() + "rupees ,that's about it " + ",And for navigation ,Say exit for going back to home screen and,say capture for identifying another product";
+
+                        textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
 
                     });
 
-
-
-                   exitSpeech();
-
-
-
-
-                }else{
-
+                    exitSpeech();
 
                 }
             }
-
-
 
 
             @Override
-            public void onFailure(Call <List<Product>> call, Throwable t) {
+            public void onFailure(@NonNull Call<List<Product>> call, Throwable t) {
 
-                Toast toast = Toast.makeText(getApplicationContext(),
-                        "This is a message displayed in a Toast",
-                        Toast.LENGTH_SHORT);
-
-                toast.show();
 
             }
         });
@@ -193,53 +181,28 @@ public class DisplayProduct extends AppCompatActivity implements RecognitionList
     }
 
 
-    public void welcomeSpeech(){
-        t = new TextToSpeech(getApplicationContext(), i -> {
+    public void welcomeSpeech() {
+
+        textToSpeech = new TextToSpeech(getApplicationContext(), i -> {
 
             String text = "Fetching product information";
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                t.speak(text,TextToSpeech.QUEUE_FLUSH,null,null);
-            } else {
-                t.speak(text, TextToSpeech.QUEUE_FLUSH, null);
-            }
+            textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
 
         });
 
-        final Handler h =new Handler();
-        Runnable r = new Runnable() {
-
-            public void run() {
-
-                if (!t.isSpeaking()) {
-
-//                    speech.startListening(recognizerIntent);
-//                        Toast.makeText(getBaseContext(), "TTS Completed", Toast.LENGTH_SHORT).show();
-                    getRetrofit(location);
-
-
-                    return;
-                }
-
-                h.postDelayed(this, 500);
-            }
-        };
-
-        h.postDelayed(r, 500);
     }
 
-    public void exitSpeech(){
+    public void exitSpeech() {
 
-
-        final Handler h =new Handler();
+        final Handler h = new Handler();
         Runnable r = new Runnable() {
 
             public void run() {
 
-                if (!t.isSpeaking()) {
+                if (!textToSpeech.isSpeaking()) {
 
                     speech.startListening(recognizerIntent);
-
 
                     return;
                 }
@@ -256,7 +219,7 @@ public class DisplayProduct extends AppCompatActivity implements RecognitionList
         if (speech != null)
             speech.destroy();
         speech = SpeechRecognizer.createSpeechRecognizer(this);
-        Log.i(LOG_TAG, "isRecognitionAvailable: " + SpeechRecognizer.isRecognitionAvailable(this));
+
         if (SpeechRecognizer.isRecognitionAvailable(this)) {
             speech.setRecognitionListener(this);
         } else {
@@ -267,10 +230,8 @@ public class DisplayProduct extends AppCompatActivity implements RecognitionList
     private void setRecogniserIntent() {
 
         recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE,
-                "en");
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "en");
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
     }
 
@@ -308,23 +269,13 @@ public class DisplayProduct extends AppCompatActivity implements RecognitionList
     @Override
     public void onResults(Bundle results) {
 
-        ArrayList<String> matches = results
-                .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-//        String text = "";
-//
-//        for (String result : matches)
-//
-//            text += result + "\n";
+        ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 
         if (matches.contains("exit")) {
             finish();
         }
-        if (matches.contains("capture")) {
-            finish();
-        }
 
         speech.startListening(recognizerIntent);
-
 
     }
 
@@ -349,7 +300,7 @@ public class DisplayProduct extends AppCompatActivity implements RecognitionList
     protected void onPause() {
         super.onPause();
         speech.stopListening();
-        t.stop();
+        textToSpeech.stop();
     }
 
     @Override
@@ -358,7 +309,7 @@ public class DisplayProduct extends AppCompatActivity implements RecognitionList
         if (speech != null) {
             speech.destroy();
         }
-        t.stop();
+        textToSpeech.stop();
 
     }
 

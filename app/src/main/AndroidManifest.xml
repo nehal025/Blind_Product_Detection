@@ -3,26 +3,35 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.blindproductdetection">
 
+
+    <!-- Speech RecognitionService -->
     <queries>
         <intent>
             <action android:name="android.speech.RecognitionService" />
         </intent>
     </queries>
+
     <queries>
         <package android:name="com.google.android.googlequicksearchbox"/>
     </queries>
+
+
     <!-- Camera Permission -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-
-    <!-- Storage Permission -->
     <uses-feature android:name="android.hardware.camera" />
 
+    <!-- Internet Permission -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Audio Permission -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+
+    <!-- Storage Permission -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
 
     <application
         android:allowBackup="true"

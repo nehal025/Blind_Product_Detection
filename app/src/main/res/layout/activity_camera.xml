@@ -14,6 +14,7 @@
         android:importantForAccessibility="no"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -40,19 +41,23 @@
             app:layout_constraintStart_toStartOf="parent"
             android:layout_margin="24dp"
             android:layout_marginTop="@dimen/_5sdp"
+            android:foreground="?android:attr/selectableItemBackground"
+
             />
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/recent_image"
             android:layout_width="45dp"
             android:layout_height="45dp"
-            android:src="@drawable/ic_launcher_background"
+            android:src="@drawable/profile"
             app:layout_constraintBottom_toBottomOf="@id/captureImg"
             app:layout_constraintEnd_toStartOf ="@id/captureImg"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginEnd="@dimen/_24sdp"
             android:layout_marginBottom="10dp"
             android:background="@android:color/transparent"
+            android:foreground="?android:attr/selectableItemBackground"
+
             android:focusable="true" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,5 +1,23 @@
 package com.example.blindproductdetection;
 
+import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Handler;
+import android.provider.MediaStore;
+import android.speech.RecognitionListener;
+import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
+import android.speech.tts.TextToSpeech;
+import android.view.animation.AlphaAnimation;
+import android.widget.ImageView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
@@ -11,29 +29,8 @@ import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
 import androidx.camera.extensions.HdrImageCaptureExtender;
 import androidx.camera.lifecycle.ProcessCameraProvider;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleOwner;
-
-import android.annotation.SuppressLint;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Handler;
-import android.provider.MediaStore;
-import android.speech.RecognitionListener;
-import android.speech.RecognizerIntent;
-import android.speech.SpeechRecognizer;
-import android.speech.tts.TextToSpeech;
-import android.util.Log;
-import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.example.blindproductdetection.utils.Global;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -50,18 +47,13 @@ import java.util.concurrent.Executors;
 public class Camera extends AppCompatActivity implements RecognitionListener {
 
     private final Executor executor = Executors.newSingleThreadExecutor();
-    private final int REQUEST_CODE_PERMISSIONS = 1001;
-    private final String[] REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA", "android.permission.WRITE_EXTERNAL_STORAGE"};
-
     androidx.camera.view.PreviewView PreviewView;
     ImageView captureImage;
     ImageView recentImage;
     public static final int PICK_IMAGE = 110;
-
-    TextToSpeech t;
+    TextToSpeech textToSpeech;
     private SpeechRecognizer speech = null;
     private Intent recognizerIntent;
-    private String LOG_TAG = "VoiceRecognitionActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,29 +65,24 @@ public class Camera extends AppCompatActivity implements RecognitionListener {
         recentImage = findViewById(R.id.recent_image);
 
         setRecentImage();
+        recentImage.setOnClickListener(v -> {
 
-        recentImage.setOnClickListener(v -> pickImage());
+
+         pickImage();});
         startCamera();
         resetSpeechRecognizer();
         setRecogniserIntent();
         welcomeSpeech();
 
 
-
-
-
     }
 
     public void welcomeSpeech(){
-        t = new TextToSpeech(getApplicationContext(), i -> {
+        textToSpeech = new TextToSpeech(getApplicationContext(), i -> {
 
             String text = "Say capture for capturing an image ,Say recent for selecting recent image from gallery ,and say exit for going back to home screen";
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                t.speak(text,TextToSpeech.QUEUE_FLUSH,null,null);
-            } else {
-                t.speak(text, TextToSpeech.QUEUE_FLUSH, null);
-            }
+            textToSpeech.speak(text,TextToSpeech.QUEUE_FLUSH,null,null);
 
         });
 
@@ -104,11 +91,9 @@ public class Camera extends AppCompatActivity implements RecognitionListener {
 
             public void run() {
 
-                if (!t.isSpeaking()) {
+                if (!textToSpeech.isSpeaking()) {
 
                     speech.startListening(recognizerIntent);
-//                        Toast.makeText(getBaseContext(), "TTS Completed", Toast.LENGTH_SHORT).show();
-
 
                     return;
                 }
@@ -125,7 +110,6 @@ public class Camera extends AppCompatActivity implements RecognitionListener {
         if (speech != null)
             speech.destroy();
         speech = SpeechRecognizer.createSpeechRecognizer(this);
-        Log.i(LOG_TAG, "isRecognitionAvailable: " + SpeechRecognizer.isRecognitionAvailable(this));
         if (SpeechRecognizer.isRecognitionAvailable(this)) {
             speech.setRecognitionListener(this);
         } else {
@@ -136,10 +120,8 @@ public class Camera extends AppCompatActivity implements RecognitionListener {
     private void setRecogniserIntent() {
 
         recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE,
-                "en");
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "en");
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
     }
 
@@ -150,7 +132,6 @@ public class Camera extends AppCompatActivity implements RecognitionListener {
 
         cameraProviderFuture.addListener(() -> {
             try {
-
                 ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
                 bindPreview(cameraProvider);
 
@@ -162,17 +143,14 @@ public class Camera extends AppCompatActivity implements RecognitionListener {
 
     @SuppressLint("RestrictedApi")
     void bindPreview(@NonNull ProcessCameraProvider cameraProvider) {
+
         CameraX.unbindAll();
 
-        Preview preview = new Preview.Builder()
-                .build();
+        Preview preview = new Preview.Builder().build();
 
-        CameraSelector cameraSelector = new CameraSelector.Builder()
-                .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-                .build();
+        CameraSelector cameraSelector = new CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build();
 
-        ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
-                .build();
+        ImageAnalysis imageAnalysis = new ImageAnalysis.Builder().build();
 
         ImageCapture.Builder builder = new ImageCapture.Builder();
 
@@ -182,9 +160,7 @@ public class Camera extends AppCompatActivity implements RecognitionListener {
             hdrImageCaptureExtender.enableExtension(cameraSelector);
         }
 
-        final ImageCapture imageCapture = builder
-                .setTargetRotation(this.getWindowManager().getDefaultDisplay().getRotation())
-                .build();
+        final ImageCapture imageCapture = builder.setTargetRotation(this.getWindowManager().getDefaultDisplay().getRotation()).build();
 
         preview.setSurfaceProvider(PreviewView.createSurfaceProvider());
 
@@ -193,11 +169,13 @@ public class Camera extends AppCompatActivity implements RecognitionListener {
         captureImage.setOnClickListener(v -> imageCapture.takePicture(executor, new ImageCapture.OnImageCapturedCallback() {
 
             public void onCaptureSuccess(@NonNull ImageProxy image) {
+
                 Global.img = convertImageProxyToBitmap(image);
 
                 Intent intent = new Intent(getApplicationContext(), ProductClassifier.class);
 
                 startActivity(intent);
+
                 finish();
 
                 super.onCaptureSuccess(image);
@@ -213,14 +191,12 @@ public class Camera extends AppCompatActivity implements RecognitionListener {
     }
 
 
-
-
-
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
         if (resultCode == RESULT_OK) {
+
             try {
                 final Uri imageUri = data.getData();
                 final InputStream imageStream = getContentResolver().openInputStream(imageUri);
@@ -330,11 +306,7 @@ public class Camera extends AppCompatActivity implements RecognitionListener {
     public void onResults(Bundle results) {
         ArrayList<String> matches = results
                 .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-//        String text = "";
-//
-//        for (String result : matches)
-//
-//            text += result + "\n";
+
 
         if (matches.contains("capture")) {
 
@@ -371,7 +343,6 @@ public class Camera extends AppCompatActivity implements RecognitionListener {
             }
 
 
-
         }
         speech.startListening(recognizerIntent);
     }
@@ -397,7 +368,7 @@ public class Camera extends AppCompatActivity implements RecognitionListener {
     protected void onPause() {
         super.onPause();
         speech.stopListening();
-        t.stop();
+        textToSpeech.stop();
     }
 
     @Override
@@ -406,7 +377,7 @@ public class Camera extends AppCompatActivity implements RecognitionListener {
         if (speech != null) {
             speech.destroy();
         }
-        t.stop();
+        textToSpeech.stop();
 
     }
 }

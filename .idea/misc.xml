@@ -3,10 +3,13 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/NeHaL/Documents/BlindProductDetection/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.37864583333333335" />
         <entry key="..\:/Users/NeHaL/Documents/BlindProductDetection/app/src/main/res/drawable-v24/layout_bg.xml" value="0.21875" />
         <entry key="..\:/Users/NeHaL/Documents/BlindProductDetection/app/src/main/res/drawable-v24/login_button_bk.xml" value="0.21875" />
         <entry key="..\:/Users/NeHaL/Documents/BlindProductDetection/app/src/main/res/drawable/book_button_bk.xml" value="0.37864583333333335" />
         <entry key="..\:/Users/NeHaL/Documents/BlindProductDetection/app/src/main/res/drawable/bottom_shadow.xml" value="0.37864583333333335" />
+        <entry key="..\:/Users/NeHaL/Documents/BlindProductDetection/app/src/main/res/drawable/ic_launcher_background.xml" value="0.37864583333333335" />
+        <entry key="..\:/Users/NeHaL/Documents/BlindProductDetection/app/src/main/res/drawable/ic_take_picture.xml" value="0.21666666666666667" />
         <entry key="..\:/Users/NeHaL/Documents/BlindProductDetection/app/src/main/res/layout/activity_camera.xml" value="0.3625" />
         <entry key="..\:/Users/NeHaL/Documents/BlindProductDetection/app/src/main/res/layout/activity_display_cost.xml" value="0.3625" />
         <entry key="..\:/Users/NeHaL/Documents/BlindProductDetection/app/src/main/res/layout/activity_display_product.xml" value="0.3625" />
@@ -18,6 +21,8 @@
         <entry key="..\:/Users/NeHaL/Documents/BlindProductDetection/app/src/main/res/layout/cost_item.xml" value="0.3625" />
         <entry key="..\:/Users/NeHaL/Documents/BlindProductDetection/app/src/main/res/layout/error.xml" value="0.3625" />
         <entry key="..\:/Users/NeHaL/Documents/BlindProductDetection/app/src/main/res/layout/restaurant_item.xml" value="0.3625" />
+        <entry key="..\:/Users/NeHaL/Documents/BlindProductDetection/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.15520833333333334" />
+        <entry key="..\:/Users/NeHaL/Documents/BlindProductDetection/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.3645833333333333" />
       </map>
     </option>
   </component>

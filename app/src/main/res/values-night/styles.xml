@@ -49,9 +49,6 @@
 
 
 
-
-
-
     <!--designs login_bkogin and register-->
     <style name="parent">
         <item name="android:layout_width">match_parent</item>

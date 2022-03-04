@@ -15,7 +15,8 @@ public interface RetrofitArrayApi {
     Call<List<Cost>> getCost(@Query("name")String name);
 
 
-
     @GET("/products/")
-    Call<List<Product>> getProduct(@Query("name")String name);
+    Call<List<Product>> getProduct(@Query("title")String name);
+
+
 }

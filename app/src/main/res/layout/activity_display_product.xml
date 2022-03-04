@@ -8,7 +8,7 @@
     android:layout_height="match_parent">
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:id="@+id/displayProduct"
+        android:id="@+id/hide_layout"
 
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -29,15 +29,17 @@
                 app:contentScrim="?attr/colorPrimary"
                 app:expandedTitleMarginBottom="50dp"
                 app:layout_scrollFlags="scroll|snap|exitUntilCollapsed|enterAlwaysCollapsed"
-                app:title="Title">
+                app:title="Title"
+             >
 
                 <com.flaviofaria.kenburnsview.KenBurnsView
                     android:id="@+id/product_img"
                     android:layout_width="match_parent"
-                    android:layout_height="500dp"
+                    android:layout_height="@dimen/_400sdp"
                     android:scaleType="center"
-                    android:src="@drawable/profile"
-                    app:layout_collapseMode="parallax" />
+                    app:layout_collapseMode="parallax"
+                    />
+
 
                 <androidx.appcompat.widget.Toolbar
                     android:id="@+id/toolbar"
@@ -52,6 +54,7 @@
 
 
         <androidx.core.widget.NestedScrollView
+            android:background="#f6f6f6"
             android:id="@+id/nested"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -78,17 +81,17 @@
                         android:shadowColor="@color/colorTextTitle"
                         android:text="Product :"
                         android:textColor="@color/colorTextTitle"
-                        android:textSize="@dimen/_10sdp"
+                        android:textSize="15sp"
                         android:textStyle="bold" />
 
                     <TextView
-                        android:id="@+id/location"
+                        android:id="@+id/product"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/_2sdp"
                         android:text="ProductName"
                         android:textColor="@color/colorTextSubtitle"
-                        android:textSize="@dimen/_10sdp"
+                        android:textSize="15sp"
                         android:textStyle="normal" />
                 </LinearLayout>
 
@@ -105,15 +108,42 @@
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/des"
+                    android:id="@+id/product_des"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
                     android:justificationMode="inter_word"
-                    android:text="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum"
+                    android:text="Lorem Ipsum is simply dummy text of the printing and book. remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum"
                     android:textColor="@color/colorTextSubtitle"
                     android:textSize="15sp" />
 
+                <LinearLayout
+                    android:layout_width="wrap_content"
+
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_6sdp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="bottom"
+                        android:shadowColor="@color/colorTextTitle"
+                        android:text="Price :"
+                        android:textColor="@color/colorTextTitle"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/product_cost"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/_2sdp"
+                        android:text="200 Rupess"
+                        android:textColor="@color/colorTextSubtitle"
+                        android:textSize="15sp"
+                        android:textStyle="normal" />
+                </LinearLayout>
 
             </LinearLayout>
 

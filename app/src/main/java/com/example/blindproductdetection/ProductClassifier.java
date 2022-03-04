@@ -1,18 +1,12 @@
 package com.example.blindproductdetection;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.res.AssetManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.MediaStore;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -20,15 +14,12 @@ import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.Toast;
-
+import androidx.appcompat.app.AppCompatActivity;
 import com.example.blindproductdetection.ml.Model;
 import com.example.blindproductdetection.utils.Global;
-
 import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
-
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -46,11 +37,9 @@ public class ProductClassifier extends AppCompatActivity implements RecognitionL
     int imageSize = 224;
     List<String> labels = new ArrayList<>();
 
-
-    TextToSpeech t;
+    TextToSpeech textToSpeech;
     private SpeechRecognizer speech = null;
     private Intent recognizerIntent;
-    private String LOG_TAG = "VoiceRecognitionActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,15 +79,11 @@ public class ProductClassifier extends AppCompatActivity implements RecognitionL
     }
 
     public  void welcomeSpeech(){
-        t = new TextToSpeech(getApplicationContext(), i -> {
+        textToSpeech = new TextToSpeech(getApplicationContext(), i -> {
 
             String text = "Image successfully captured,Say classify for product identification  ,Say retake for retaking image  ,and say Exit for going back to home screen";
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                t.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
-            } else {
-                t.speak(text, TextToSpeech.QUEUE_FLUSH, null);
-            }
+            textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
 
         });
 
@@ -107,11 +92,9 @@ public class ProductClassifier extends AppCompatActivity implements RecognitionL
 
             public void run() {
 
-                if (!t.isSpeaking()) {
+                if (!textToSpeech.isSpeaking()) {
 
                     speech.startListening(recognizerIntent);
-//                        Toast.makeText(getBaseContext(), "TTS Completed", Toast.LENGTH_SHORT).show();
-
 
                     return;
                 }
@@ -128,7 +111,6 @@ public class ProductClassifier extends AppCompatActivity implements RecognitionL
         if (speech != null)
             speech.destroy();
         speech = SpeechRecognizer.createSpeechRecognizer(this);
-        Log.i(LOG_TAG, "isRecognitionAvailable: " + SpeechRecognizer.isRecognitionAvailable(this));
         if (SpeechRecognizer.isRecognitionAvailable(this)) {
             speech.setRecognitionListener(this);
         } else {
@@ -137,12 +119,9 @@ public class ProductClassifier extends AppCompatActivity implements RecognitionL
     }
 
     private void setRecogniserIntent() {
-
         recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE,
-                "en");
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "en");
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
     }
 
@@ -199,7 +178,7 @@ public class ProductClassifier extends AppCompatActivity implements RecognitionL
             }
 
             Intent myIntent = new Intent(ProductClassifier.this, DisplayProduct.class);
-            myIntent.putExtra("location", labels.get(maxPos));
+            myIntent.putExtra("product", labels.get(maxPos));
             myIntent.putExtra("confidence", confidence.toString());
             ProductClassifier.this.startActivity(myIntent);
             model.close();
@@ -211,6 +190,7 @@ public class ProductClassifier extends AppCompatActivity implements RecognitionL
     }
 
     public void loadLabels() throws IOException {
+
         AssetManager manager;
         String line;
         manager = getAssets();
@@ -265,11 +245,6 @@ public class ProductClassifier extends AppCompatActivity implements RecognitionL
     public void onResults(Bundle results) {
         ArrayList<String> matches = results
                 .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-//        String text = "";
-//
-//        for (String result : matches)
-//
-//            text += result + "\n";
 
         if (matches.contains("classify")) {
             classify.performClick();
@@ -308,7 +283,7 @@ public class ProductClassifier extends AppCompatActivity implements RecognitionL
     protected void onPause() {
         super.onPause();
         speech.stopListening();
-        t.stop();
+        textToSpeech.stop();
     }
 
     @Override
@@ -317,7 +292,7 @@ public class ProductClassifier extends AppCompatActivity implements RecognitionL
         if (speech != null) {
             speech.destroy();
         }
-        t.stop();
+        textToSpeech.stop();
 
     }
 }

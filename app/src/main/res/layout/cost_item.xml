@@ -24,7 +24,8 @@
                 android:id="@+id/img"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
-                android:scaleType="centerCrop"
+                android:scaleType="center"
+                android:src="@drawable/profile"
                 android:transitionName="img"
                 tools:ignore="UnusedAttribute" />
 
@@ -67,15 +68,15 @@
                 android:layout_height="20dp"
                 android:layout_below="@id/title"
                 android:layout_marginLeft="16dp"
-                android:layout_marginTop="@dimen/_15sdp"
+                android:layout_marginTop="@dimen/_18sdp"
                 android:layout_marginBottom="10dp"
                 android:ellipsize="end"
                 android:fontFamily="sans-serif-light"
                 android:maxLines="1"
                 android:singleLine="true"
-                android:text="Cost"
+                android:text="Cost :"
                 android:textColor="@color/colorTextTitle"
-                android:textSize="@dimen/_10sdp"
+                android:textSize="@dimen/_12sdp"
                 android:textStyle="bold" />
 
 
@@ -85,14 +86,14 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/title"
                 android:layout_marginStart="@dimen/_5sdp"
-                android:layout_marginTop="@dimen/_15sdp"
+                android:layout_marginTop="@dimen/_18sdp"
                 android:layout_toEndOf="@id/source"
                 android:text="200"
 
-                android:textSize="@dimen/_10sdp" />
+                android:textSize="@dimen/_12sdp" />
 
 
-            <Button
+            <com.ornach.nobobutton.NoboButton
                 android:id="@+id/bookNow"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -102,8 +103,15 @@
                 android:layout_marginTop="@dimen/_10sdp"
                 android:layout_marginEnd="@dimen/_10sdp"
                 android:layout_marginBottom="@dimen/_10sdp"
-                android:text="Book Now"
-                android:textSize="@dimen/_8sdp" />
+                android:padding="@dimen/_10sdp"
+                app:nb_backgroundColor="@color/colorPrimary"
+                app:nb_borderColor="#FFFFFF"
+                app:nb_borderWidth="2dp"
+                app:nb_focusColor="@color/colorPrimaryDark"
+                app:nb_radius="8dp"
+                app:nb_text="Book now"
+                app:nb_textColor="#FFF"
+                app:nb_textStyle="bold" />
 
 
         </RelativeLayout>

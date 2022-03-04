@@ -1,24 +1,25 @@
 package com.example.blindproductdetection;
 
+import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Handler;
+import android.speech.RecognitionListener;
+import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
+import android.speech.tts.TextToSpeech;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.annotation.SuppressLint;
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Bundle;
-import android.speech.tts.TextToSpeech;
-import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.example.blindproductdetection.adapter.CostAdapter;
@@ -36,10 +37,9 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class DisplayCost extends AppCompatActivity {
-    TextToSpeech t;
-    ProgressBar progressBar;
+public class DisplayCost extends AppCompatActivity implements RecognitionListener {
 
+    TextToSpeech textToSpeech;
     RecyclerView recyclerView;
     RecyclerView.LayoutManager layoutManager;
     List<Cost> productCost = new ArrayList<>();
@@ -49,44 +49,66 @@ public class DisplayCost extends AppCompatActivity {
     TextView errorTitle, errorMessage;
     Button btnRetry;
     LottieAnimationView lottie;
+    private SpeechRecognizer speech = null;
+    private Intent recognizerIntent;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_display_cost);
-        Intent intent = getIntent();
         TextView tv = findViewById(R.id.productName);
-//        progressBar=findViewById(R.id.progressbar);
         recyclerView = findViewById(R.id.recyclerView_restaurant);
         layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setNestedScrollingEnabled(false);
         lottie = findViewById(R.id.lottie);
-
         errorLayout = findViewById(R.id.errorLayout);
         errorImage = findViewById(R.id.errorImage);
         errorTitle = findViewById(R.id.errorTitle);
         errorMessage = findViewById(R.id.errorMessage);
         btnRetry = findViewById(R.id.btnRetry);
 
-
+        Intent intent = getIntent();
         String name = intent.getStringExtra("name");
         tv.setText(name);
-        t = new TextToSpeech(getApplicationContext(), i -> {
+
+        resetSpeechRecognizer();
+        setRecogniserIntent();
+
+        textToSpeech = new TextToSpeech(getApplicationContext(), i -> {
 
             String text = "searching " + name + ", in amazon ";
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                t.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
-            } else {
-                t.speak(text, TextToSpeech.QUEUE_FLUSH, null);
-            }
+            textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
             getRetrofit(name);
 
         });
 
     }
+
+    private void resetSpeechRecognizer() {
+
+        if (speech != null)
+            speech.destroy();
+        speech = SpeechRecognizer.createSpeechRecognizer(this);
+        if (SpeechRecognizer.isRecognitionAvailable(this)) {
+            speech.setRecognitionListener(this);
+        } else {
+            finish();
+        }
+
+    }
+
+    private void setRecogniserIntent() {
+
+        recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "en");
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
+    }
+
 
     private void getRetrofit(String productName) {
         errorLayout.setVisibility(View.GONE);
@@ -98,6 +120,7 @@ public class DisplayCost extends AppCompatActivity {
                 .build();
 
         String baseURL = "https://blind-product-detection.herokuapp.com/";
+
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(baseURL)
                 .client(okHttpClient)
@@ -117,19 +140,30 @@ public class DisplayCost extends AppCompatActivity {
                 if (!response.body().isEmpty()) {
                     lottie.cancelAnimation();
                     lottie.setVisibility(View.GONE);
-                    t = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
-                        @Override
-                        public void onInit(int i) {
 
-                            String text = "The Minimum cost product is " + response.body().get(0).getTitle() + "for rupees " + response.body().get(0).getCash() + " And  The Maximum cost product is" + response.body().get(1).getTitle() + "for rupees " + response.body().get(1).getCash();
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                t.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
-                            } else {
-                                t.speak(text, TextToSpeech.QUEUE_FLUSH, null);
-                            }
-                        }
+                    textToSpeech = new TextToSpeech(getApplicationContext(), i -> {
+
+                        String text = "The Minimum cost product is " + response.body().get(0).getTitle() + "for rupees " + response.body().get(0).getCash() + " And  The Maximum cost product is" + response.body().get(1).getTitle() + "for rupees " + response.body().get(1).getCash()+ "And for navigation say exit" ;
+                        textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
                     });
 
+                    final Handler h = new Handler();
+                    Runnable r = new Runnable() {
+
+                        public void run() {
+
+                            if (!textToSpeech.isSpeaking()) {
+
+                                speech.startListening(recognizerIntent);
+
+                                return;
+                            }
+
+                            h.postDelayed(this, 100);
+                        }
+                    };
+
+                    h.postDelayed(r, 100);
 
                     if (!productCost.isEmpty()) {
                         productCost.clear();
@@ -137,9 +171,7 @@ public class DisplayCost extends AppCompatActivity {
 
                     for (int i = 0; i < response.body().size(); i++) {
 
-                        productCost.add(new Cost(response.body().get(i).getTitle(),
-                                response.body().get(i).getImg(),
-                                "Rs" + response.body().get(i).getCash(), response.body().get(i).getBookNow()
+                        productCost.add(new Cost(response.body().get(i).getTitle(), response.body().get(i).getImg(), "Rs" + response.body().get(i).getCash(), response.body().get(i).getBookNow()
 
                         ));
                     }
@@ -166,28 +198,23 @@ public class DisplayCost extends AppCompatActivity {
                             break;
                     }
 
-                    showErrorMessage(
-                            R.drawable.no_result,
-                            "No Result",
-                            "Please Try Again!\n" +
-                                    errorCode);
+                    showErrorMessage(R.drawable.no_result, "No Result", "Please Try Again!\n" + errorCode);
 
                 }
             }
 
 
             @Override
-            public void onFailure(Call<List<Cost>> call, Throwable t) {
+            public void onFailure(@NonNull Call<List<Cost>> call, Throwable t) {
 
-                showErrorMessage(R.drawable.no_result, "Oops..",
-
-                        t.toString());
+                showErrorMessage(R.drawable.no_result, "Oops..", t.toString());
 
             }
         });
 
 
     }
+
 
     private void showErrorMessage(int imageView, String title, String message) {
 
@@ -201,11 +228,13 @@ public class DisplayCost extends AppCompatActivity {
 
         btnRetry.setOnClickListener(v -> {
             finish();
+
             overridePendingTransition(0, 0);
             startActivity(getIntent());
             overridePendingTransition(0, 0);
         });
     }
+
 
     private void initListener() {
 
@@ -228,6 +257,59 @@ public class DisplayCost extends AppCompatActivity {
 
     }
 
+
+
+    @Override
+    public void onReadyForSpeech(Bundle params) {
+
+    }
+
+    @Override
+    public void onBeginningOfSpeech() {
+
+    }
+
+    @Override
+    public void onRmsChanged(float rmsdB) {
+
+    }
+
+    @Override
+    public void onBufferReceived(byte[] buffer) {
+
+    }
+
+    @Override
+    public void onEndOfSpeech() {
+
+    }
+
+    @Override
+    public void onError(int error) {
+        resetSpeechRecognizer();
+        speech.startListening(recognizerIntent);
+    }
+
+    @Override
+    public void onResults(Bundle results) {
+        ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+
+        if (matches.contains("exit")) {
+            finish();
+        }
+
+    }
+
+    @Override
+    public void onPartialResults(Bundle partialResults) {
+
+    }
+
+    @Override
+    public void onEvent(int eventType, Bundle params) {
+
+    }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -237,15 +319,14 @@ public class DisplayCost extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        t.stop();
+        textToSpeech.stop();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
 
-        t.stop();
+        textToSpeech.stop();
 
     }
-
 }

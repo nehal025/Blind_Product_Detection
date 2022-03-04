@@ -26,17 +26,18 @@ import com.bumptech.glide.request.target.Target;
 import com.example.blindproductdetection.R;
 import com.example.blindproductdetection.model.Cost;
 import com.example.blindproductdetection.utils.Utils;
+import com.ornach.nobobutton.NoboButton;
 
 import java.util.List;
 
 public class CostAdapter extends RecyclerView.Adapter<CostAdapter.MyViewHolder> {
 
-    private List<Cost> articles;
-    private Context context;
+    private final List<Cost> products;
+    private final Context context;
 
 
-    public CostAdapter(List<Cost> articles, Context context) {
-        this.articles = articles;
+    public CostAdapter(List<Cost> products, Context context) {
+        this.products = products;
         this.context = context;
     }
 
@@ -64,8 +65,10 @@ public class CostAdapter extends RecyclerView.Adapter<CostAdapter.MyViewHolder> 
     @SuppressLint({"CheckResult", "SetTextI18n"})
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holders, int position) {
+
         final MyViewHolder holder = holders;
-        Cost model = articles.get(position);
+
+        Cost model = products.get(position);
 
         RequestOptions requestOptions = new RequestOptions();
         requestOptions.placeholder(Utils.getRandomDrawbleColor());
@@ -100,16 +103,16 @@ public class CostAdapter extends RecyclerView.Adapter<CostAdapter.MyViewHolder> 
 
     @Override
     public int getItemCount() {
-        return articles.size();
+        return products.size();
     }
 
 
-    public class MyViewHolder extends RecyclerView.ViewHolder {
+    public static class MyViewHolder extends RecyclerView.ViewHolder {
 
         TextView title, price;
         ImageView imageView;
         ProgressBar progressBar;
-        Button bookNow;
+        NoboButton bookNow;
 
         public MyViewHolder(View itemView, final OnItemClickListener listener) {
 

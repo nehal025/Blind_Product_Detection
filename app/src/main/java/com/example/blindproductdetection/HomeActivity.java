@@ -1,23 +1,20 @@
 package com.example.blindproductdetection;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
-import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
 
@@ -28,12 +25,9 @@ public class HomeActivity extends AppCompatActivity implements RecognitionListen
     private final String[] REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA", "android.permission.WRITE_EXTERNAL_STORAGE", "android.permission.RECORD_AUDIO"};
     private SpeechRecognizer speech = null;
     private Intent recognizerIntent;
-    private String LOG_TAG = "VoiceRecognitionActivity";
-    TextToSpeech t;
+    TextToSpeech textToSpeech;
     Boolean flag=true;
-
     Button cost,product;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,24 +49,20 @@ public class HomeActivity extends AppCompatActivity implements RecognitionListen
 
         resetSpeechRecognizer();
         setRecogniserIntent();
-
-
         welcomeSpeech();
 
 
     }
 
+
+
     public void welcomeSpeech() {
 
-        t = new TextToSpeech(getApplicationContext(), i -> {
+        textToSpeech = new TextToSpeech(getApplicationContext(), i -> {
 
-            String text = "Welcome to blind product detection say cost for cost identification  , say product for product identification ,and say exit for closing app ";
+            String text = "Welcome to blind product detection say cost for cost identification  , say product for product identification ,and say exit for closing app";
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                t.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
-            } else {
-                t.speak(text, TextToSpeech.QUEUE_FLUSH, null);
-            }
+            textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
 
         });
 
@@ -83,22 +73,20 @@ public class HomeActivity extends AppCompatActivity implements RecognitionListen
 
             public void run() {
 
-                if (!t.isSpeaking()) {
+                if (!textToSpeech.isSpeaking()) {
                     if (allPermissionsGranted()) {
 
                         speech.startListening(recognizerIntent);
-//                        Toast.makeText(getBaseContext(), "TTS Completed", Toast.LENGTH_SHORT).show();
 
                     } else {
-
-
 
                         if(flag){
                             ActivityCompat.requestPermissions(HomeActivity.this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
 
                         }
                         flag=false;
-                        t.speak("you are starting app first time so, please take anyone's help to allow ,all  Permissions ", TextToSpeech.QUEUE_FLUSH, null, null);
+
+                        textToSpeech.speak("you are starting app first time so, please take anyone's help to allow ,all  Permissions ", TextToSpeech.QUEUE_FLUSH, null, null);
 
                     }
                     return;
@@ -131,7 +119,6 @@ public class HomeActivity extends AppCompatActivity implements RecognitionListen
         if (speech != null)
             speech.destroy();
         speech = SpeechRecognizer.createSpeechRecognizer(this);
-        Log.i(LOG_TAG, "isRecognitionAvailable: " + SpeechRecognizer.isRecognitionAvailable(this));
         if (SpeechRecognizer.isRecognitionAvailable(this)) {
             speech.setRecognitionListener(this);
         } else {
@@ -140,12 +127,9 @@ public class HomeActivity extends AppCompatActivity implements RecognitionListen
     }
 
     private void setRecogniserIntent() {
-
         recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE,
-                "en");
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "en");
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
     }
 
@@ -165,13 +149,8 @@ public class HomeActivity extends AppCompatActivity implements RecognitionListen
 
     @Override
     public void onResults(Bundle results) {
-        ArrayList<String> matches = results
-                .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-//        String text = "";
-//
-//        for (String result : matches)
-//
-//            text += result + "\n";
+        ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+
         if (matches.contains("cost")) {
 
             Intent myIntent = new Intent(HomeActivity.this, IdentifyCost.class);
@@ -204,6 +183,7 @@ public class HomeActivity extends AppCompatActivity implements RecognitionListen
 
     @Override
     public void onPartialResults(Bundle arg0) {
+
     }
 
     @Override
@@ -229,7 +209,6 @@ public class HomeActivity extends AppCompatActivity implements RecognitionListen
             }
         }
 
-
     }
 
     @Override
@@ -243,7 +222,7 @@ public class HomeActivity extends AppCompatActivity implements RecognitionListen
     protected void onPause() {
         super.onPause();
         speech.stopListening();
-       t.stop();
+        textToSpeech.stop();
     }
 
     @Override
@@ -252,7 +231,7 @@ public class HomeActivity extends AppCompatActivity implements RecognitionListen
         if (speech != null) {
             speech.destroy();
         }
-        t.stop();
+        textToSpeech.stop();
 
     }
 

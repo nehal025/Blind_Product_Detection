@@ -1,28 +1,22 @@
 package com.example.blindproductdetection;
 
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
-import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 
 import java.util.ArrayList;
 
-public class IdentifyCost extends AppCompatActivity implements
-        RecognitionListener {
+public class IdentifyCost extends AppCompatActivity implements RecognitionListener {
 
     private SpeechRecognizer speech = null;
     private Intent recognizerIntent;
-    private String LOG_TAG = "VoiceRecognitionActivity";
-
-    TextToSpeech t;
+    TextToSpeech textToSpeech;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,22 +26,17 @@ public class IdentifyCost extends AppCompatActivity implements
 
         resetSpeechRecognizer();
         setRecogniserIntent();
-//        speech.startListening(recognizerIntent);
         welcomeSpeech();
-
 
     }
 
    public void welcomeSpeech(){
-       t = new TextToSpeech(getApplicationContext(), i -> {
+
+       textToSpeech = new TextToSpeech(getApplicationContext(), i -> {
 
            String text = "Say any product name for cost identification ,or say exit for going back to home screen";
 
-           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-               t.speak(text,TextToSpeech.QUEUE_FLUSH,null,null);
-           } else {
-               t.speak(text, TextToSpeech.QUEUE_FLUSH, null);
-           }
+           textToSpeech.speak(text,TextToSpeech.QUEUE_FLUSH,null,null);
 
        });
 
@@ -57,11 +46,9 @@ public class IdentifyCost extends AppCompatActivity implements
 
            public void run() {
 
-               if (!t.isSpeaking()) {
+               if (!textToSpeech.isSpeaking()) {
 
                    speech.startListening(recognizerIntent);
-//                        Toast.makeText(getBaseContext(), "TTS Completed", Toast.LENGTH_SHORT).show();
-
 
                    return;
                }
@@ -81,7 +68,6 @@ public class IdentifyCost extends AppCompatActivity implements
         if (speech != null)
             speech.destroy();
         speech = SpeechRecognizer.createSpeechRecognizer(this);
-        Log.i(LOG_TAG, "isRecognitionAvailable: " + SpeechRecognizer.isRecognitionAvailable(this));
         if (SpeechRecognizer.isRecognitionAvailable(this)) {
             speech.setRecognitionListener(this);
         } else {
@@ -92,10 +78,8 @@ public class IdentifyCost extends AppCompatActivity implements
     private void setRecogniserIntent() {
 
         recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE,
-                "en");
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "en");
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
     }
 
@@ -115,26 +99,17 @@ public class IdentifyCost extends AppCompatActivity implements
 
     @Override
     public void onResults(Bundle results) {
-        ArrayList<String> matches = results
-                .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-//        String text = "";
-//
-//        for (String result : matches) {
-//
-//            text += result + "\n";
-//        }
+        ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 
-        if(matches.contains("exit")){
-            finish();
-        }else {
+        if (!matches.contains("exit")) {
 
             Intent myIntent = new Intent(IdentifyCost.this, DisplayCost.class);
             myIntent.putExtra("name", matches.get(0));
             IdentifyCost.this.startActivity(myIntent);
-            finish();
 
         }
 
+        finish();
 
         speech.startListening(recognizerIntent);
     }
@@ -172,7 +147,7 @@ public class IdentifyCost extends AppCompatActivity implements
     protected void onPause() {
         super.onPause();
         speech.stopListening();
-        t.stop();
+        textToSpeech.stop();
     }
 
     @Override
@@ -181,7 +156,7 @@ public class IdentifyCost extends AppCompatActivity implements
         if (speech != null) {
             speech.destroy();
         }
-        t.stop();
+        textToSpeech.stop();
 
     }
 }
