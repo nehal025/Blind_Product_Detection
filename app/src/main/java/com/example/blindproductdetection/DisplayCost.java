@@ -119,7 +119,7 @@ public class DisplayCost extends AppCompatActivity implements RecognitionListene
                 .writeTimeout(60, TimeUnit.SECONDS)
                 .build();
 
-        String baseURL = "https://blind-product-detection.herokuapp.com/";
+        String baseURL = getResources().getString(R.string.link);
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(baseURL)

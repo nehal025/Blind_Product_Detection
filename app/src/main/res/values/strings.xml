@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Blind Product Detection</string>
+    <string name="link">https://blind-product-detection.herokuapp.com/</string>
+
 </resources>

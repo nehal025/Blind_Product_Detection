@@ -50,7 +50,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class DisplayProduct extends AppCompatActivity implements RecognitionListener {
 
-    TextView displayProduct,displayDes,displayPrice;
+    TextView displayProduct, displayDes, displayPrice;
     String product, confidence;
     TextToSpeech textToSpeech;
     LottieAnimationView lottie;
@@ -71,7 +71,6 @@ public class DisplayProduct extends AppCompatActivity implements RecognitionList
         displayPrice = findViewById(R.id.product_cost);
         hideLayout = findViewById(R.id.hide_layout);
         hideLayout.setVisibility(View.INVISIBLE);
-
 
 
         product = getIntent().getExtras().getString("product");
@@ -106,7 +105,7 @@ public class DisplayProduct extends AppCompatActivity implements RecognitionList
                 .writeTimeout(60, TimeUnit.SECONDS)
                 .build();
 
-        String baseURL = "https://blind-product-detection.herokuapp.com/";
+        String baseURL = getResources().getString(R.string.link);
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(baseURL)
                 .client(okHttpClient)
@@ -126,7 +125,6 @@ public class DisplayProduct extends AppCompatActivity implements RecognitionList
                     lottie.cancelAnimation();
                     lottie.setVisibility(View.GONE);
                     hideLayout.setVisibility(View.VISIBLE);
-
 
 
                     RequestOptions requestOptions = new RequestOptions();
@@ -158,7 +156,7 @@ public class DisplayProduct extends AppCompatActivity implements RecognitionList
 
                     textToSpeech = new TextToSpeech(getApplicationContext(), i -> {
 
-                        String text = response.body().get(0).getTitle() + ", detected And," + response.body().get(0).getInfo() + " ,It is for" + response.body().get(0).getPrice() + "rupees ,that's about it " + ",And for navigation ,Say exit for going back to home screen and,say capture for identifying another product";
+                        String text = response.body().get(0).getTitle() + ", detected And," + response.body().get(0).getInfo() + " ,It is for" + response.body().get(0).getPrice() + "rupees ,that's about it " + ",And for navigation ,Say exit for going back to home screen ";
 
                         textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
 

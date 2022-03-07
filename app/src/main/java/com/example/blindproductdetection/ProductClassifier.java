@@ -150,7 +150,7 @@ public class ProductClassifier extends AppCompatActivity implements RecognitionL
             inputFeature0.loadBuffer(byteBuffer);
 
             Model.Outputs outputs = model.process(inputFeature0);
-            TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
+            TensorBuffer outputFeature0 = outputs.getProbabilityAsTensorBuffer();
 
             float[] confidences = outputFeature0.getFloatArray();
 

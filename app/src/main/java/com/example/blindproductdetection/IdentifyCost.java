@@ -101,7 +101,9 @@ public class IdentifyCost extends AppCompatActivity implements RecognitionListen
     public void onResults(Bundle results) {
         ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 
-        if (!matches.contains("exit")) {
+        if(matches.contains("exit")){
+            finish();
+        }else {
 
             Intent myIntent = new Intent(IdentifyCost.this, DisplayCost.class);
             myIntent.putExtra("name", matches.get(0));
